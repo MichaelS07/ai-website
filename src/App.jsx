@@ -1,17 +1,18 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, Sparkles, Search, PenTool, ArrowRight, Github, Twitter, Mail, SquareCode, SlidersHorizontal, Star, ChevronLeft, ChevronRight, Tag, Command, BookOpen } from "lucide-react";
+import { Cpu, Sparkles, Search, ArrowRight, Github, Twitter, Mail, SlidersHorizontal, ChevronLeft, Tag, Command, BookOpen } from "lucide-react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 
-// ====== MOCK CONTENT (swap this with your CMS or Markdown later) ======
+/* === your POSTS + TAGS data exactly as you had it === */
 const TAGS = ["How-To","News","Releases","Tips","Opinion","Benchmarks","Agents","Ethics","Tools"];
-
 const POSTS = [
   {
     id: "gpt5-first-look",
     title: "GPT-5 First Look: What Changed & Why It Matters",
-    excerpt: "Hands-on impressions, breaking changes, and practical advice on when to adopt—and when to wait.",
-    cover: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1600&auto=format&fit=crop",
+    excerpt:
+      "Hands-on impressions, breaking changes, and practical advice on when to adopt—and when to wait.",
+    cover:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1600&auto=format&fit=crop",
     tags: ["News", "Releases", "Benchmarks"],
     date: "2025-08-09",
     read: 7,
@@ -31,8 +32,10 @@ If you build agentic workflows or do heavy research summarization, yes. For ligh
   {
     id: "agents-field-guide",
     title: "Agentic Systems: A Field Guide for Busy Teams",
-    excerpt: "Cut through the hype. Here’s a sane blueprint for agents that actually ship and don’t torch your cloud bill.",
-    cover: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop",
+    excerpt:
+      "Cut through the hype. Here’s a sane blueprint for agents that actually ship and don’t torch your cloud bill.",
+    cover:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop",
     tags: ["How-To", "Agents", "Tools"],
     date: "2025-08-07",
     read: 10,
@@ -54,8 +57,10 @@ If you build agentic workflows or do heavy research summarization, yes. For ligh
   {
     id: "model-smackdown",
     title: "Model Smackdown: GPT-5 vs Gemini vs Claude vs Llama",
-    excerpt: "We ran a clean bake-off across coding, search, and long-context tasks. Here’s what surprised us.",
-    cover: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1600&auto=format&fit=crop",
+    excerpt:
+      "We ran a clean bake-off across coding, search, and long-context tasks. Here’s what surprised us.",
+    cover:
+      "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1600&auto=format&fit=crop",
     tags: ["Benchmarks", "Opinion", "Releases"],
     date: "2025-08-06",
     read: 8,
@@ -73,8 +78,10 @@ Same prompts, temperature 0.2, 5 seeds, human eval + rubric.
   {
     id: "prompt-toolbox",
     title: "Your Prompting Toolbox for 2025",
-    excerpt: "Small tricks that stack: role compression, sandwich prompts, and structured outputs that never break.",
-    cover: "https://images.unsplash.com/photo-1496171367470-9ed9a91ea931?q=80&w=1600&auto=format&fit=crop",
+    excerpt:
+      "Small tricks that stack: role compression, sandwich prompts, and structured outputs that never break.",
+    cover:
+      "https://images.unsplash.com/photo-1496171367470-9ed9a91ea931?q=80&w=1600&auto=format&fit=crop",
     tags: ["Tips", "How-To"],
     date: "2025-08-02",
     read: 6,
@@ -91,9 +98,7 @@ Same prompts, temperature 0.2, 5 seeds, human eval + rubric.
   },
 ];
 
-// ====== UTILITIES ======
 const classNames = (...c) => c.filter(Boolean).join(" ");
-
 function useKey(key, handler) {
   React.useEffect(() => {
     const onKey = (e) => {
@@ -107,13 +112,12 @@ function useKey(key, handler) {
   }, [key, handler]);
 }
 
-// ====== FUTURE-LOOKING BACKGROUND ======
 function NeonBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
       <div className="absolute inset-0 bg-[radial-gradient(1200px_circle_at_30%_-20%,rgba(56,189,248,0.25),transparent_60%),radial-gradient(900px_circle_at_80%_10%,rgba(168,85,247,0.2),transparent_60%),radial-gradient(700px_circle_at_70%_80%,rgba(59,130,246,0.18),transparent_60%)]" />
       <div className="absolute inset-0 opacity-30 [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]">
-        <svg className="w-full h-full animate-[pulse_8s_ease-in-out_infinite]" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-full h-full animate-[pulse_8s_ease-in-out_infinite]" xmlns="http://www.w3.org/200/svg">
           <defs>
             <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
               <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(148,163,184,0.25)" strokeWidth="1" />
@@ -127,60 +131,33 @@ function NeonBackground() {
   );
 }
 
-// ====== COMMAND PALETTE ======
 function CommandPalette({ open, onClose, onOpenArticle }) {
   const [q, setQ] = useState("");
-  const results = useMemo(() => {
+  const results = React.useMemo(() => {
     const n = q.trim().toLowerCase();
     if (!n) return POSTS;
     return POSTS.filter((p) =>
       [p.title, p.excerpt, ...(p.tags || [])].join(" ").toLowerCase().includes(n)
     );
   }, [q]);
-
   useKey("Escape", () => open && onClose());
-
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-start justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <motion.div className="fixed inset-0 z-50 flex items-start justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 10, opacity: 0 }}
-            className="relative w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/90 shadow-2xl"
-          >
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }} className="relative w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/90 shadow-2xl">
             <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3">
               <Command className="w-4 h-4 text-cyan-300" />
-              <input
-                autoFocus
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search posts, tags, topics…"
-                className="w-full bg-transparent text-slate-100 placeholder-slate-500 outline-none"
-              />
+              <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search posts, tags, topics…" className="w-full bg-transparent text-slate-100 placeholder-slate-500 outline-none" />
               <kbd className="rounded bg-slate-800 px-2 py-1 text-[10px] text-slate-400">esc</kbd>
             </div>
             <div className="max-h-[60vh] overflow-auto p-2">
-              {results.length === 0 && (
-                <div className="p-6 text-center text-slate-400">No results. Try another term.</div>
-              )}
+              {results.length === 0 && <div className="p-6 text-center text-slate-400">No results. Try another term.</div>}
               <ul className="space-y-2">
                 {results.map((p) => (
                   <li key={p.id}>
-                    <button
-                      onClick={() => {
-                        onOpenArticle(p.id);
-                        onClose();
-                      }}
-                      className="group w-full rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left hover:border-cyan-500/40 hover:bg-slate-900/80"
-                    >
+                    <button onClick={() => { onOpenArticle(p.id); onClose(); }} className="group w-full rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-left hover:border-cyan-500/40 hover:bg-slate-900/80">
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <h4 className="text-slate-100 group-hover:text-white">{p.title}</h4>
@@ -190,9 +167,7 @@ function CommandPalette({ open, onClose, onOpenArticle }) {
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         {p.tags.map((t) => (
-                          <span key={t} className="rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-400">
-                            #{t}
-                          </span>
+                          <span key={t} className="rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-400">#{t}</span>
                         ))}
                       </div>
                     </button>
@@ -207,19 +182,13 @@ function CommandPalette({ open, onClose, onOpenArticle }) {
   );
 }
 
-// ====== NAVBAR ======
 function NavBar({ onOpenPalette }) {
   return (
     <div className="sticky top-0 z-40 w-full backdrop-blur supports-[backdrop-filter]:bg-slate-900/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 120, damping: 12 }}
-              className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-tr from-cyan-400 to-violet-500 shadow-lg"
-            >
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 120, damping: 12 }} className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-tr from-cyan-400 to-violet-500 shadow-lg">
               <Cpu className="h-4 w-4 text-slate-900" />
             </motion.div>
             <div className="absolute -inset-1 -z-10 rounded-2xl bg-gradient-to-tr from-cyan-400/30 to-violet-500/30 blur-lg" />
@@ -245,7 +214,6 @@ function NavBar({ onOpenPalette }) {
   );
 }
 
-// ====== HERO ======
 function Hero() {
   return (
     <section className="mx-auto max-w-7xl px-4 pt-12">
@@ -290,11 +258,11 @@ function AnimatedTerminal() {
     "# result: gpt-5 faster first token, sonnet tighter style",
   ];
   const [i, setI] = useState(0);
-  useEffect(() => {
+  React.useEffect(() => {
     const t = setInterval(() => setI((p) => (p + 1) % (lines.length + 4)), 1600);
     return () => clearInterval(t);
   }, []);
-  return (
+    return (
     <div className="h-64 w-full bg-slate-950/70 p-4 font-mono text-[12px] text-slate-300">
       <div className="mb-3 flex items-center gap-2">
         <div className="h-3 w-3 rounded-full bg-red-500/70" />
@@ -318,23 +286,13 @@ function AnimatedTerminal() {
   );
 }
 
-// ====== FILTER BAR ======
 function FilterBar({ active, setActive }) {
   return (
     <div className="mx-auto max-w-7xl px-4">
       <div className="mt-10 flex flex-wrap items-center gap-2">
         <span className="mr-1 text-xs uppercase tracking-widest text-slate-400">Filter:</span>
         {["All", ...TAGS].map((t) => (
-          <button
-            key={t}
-            onClick={() => setActive(t)}
-            className={classNames(
-              "rounded-full border px-3 py-1 text-xs",
-              active === t
-                ? "border-cyan-400/60 bg-cyan-400/10 text-cyan-200"
-                : "border-slate-700 bg-slate-900/50 text-slate-300 hover:border-slate-600"
-            )}
-          >
+          <button key={t} onClick={() => setActive(t)} className={classNames("rounded-full border px-3 py-1 text-xs", active === t ? "border-cyan-400/60 bg-cyan-400/10 text-cyan-200" : "border-slate-700 bg-slate-900/50 text-slate-300 hover:border-slate-600")}>
             <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" />{t}</span>
           </button>
         ))}
@@ -343,9 +301,8 @@ function FilterBar({ active, setActive }) {
   );
 }
 
-// ====== BLOG GRID ======
 function BlogGrid({ onOpenArticle, activeTag }) {
-  const items = useMemo(() => {
+  const items = React.useMemo(() => {
     const base = [...POSTS].sort((a, b) => (a.date < b.date ? 1 : -1));
     if (!activeTag || activeTag === "All") return base;
     return base.filter((p) => p.tags.includes(activeTag));
@@ -359,14 +316,7 @@ function BlogGrid({ onOpenArticle, activeTag }) {
       </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((p, idx) => (
-          <motion.article
-            key={p.id}
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: idx * 0.03 }}
-            className="group overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900/60 backdrop-blur-md"
-          >
+          <motion.article key={p.id} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.03 }} className="group overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900/60 backdrop-blur-md">
             <div className="relative">
               <img src={p.cover} alt="" className="h-44 w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent" />
@@ -383,10 +333,7 @@ function BlogGrid({ onOpenArticle, activeTag }) {
                 <span>{new Date(p.date).toLocaleDateString()}</span>
                 <span className="inline-flex items-center gap-1"><BookOpen className="h-3 w-3" />{p.read} min</span>
               </div>
-              <button
-                onClick={() => onOpenArticle(p.id)}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-500/50"
-              >
+              <button onClick={() => onOpenArticle(p.id)} className="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:border-cyan-500/50">
                 Read article <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -397,7 +344,6 @@ function BlogGrid({ onOpenArticle, activeTag }) {
   );
 }
 
-// ====== ARTICLE VIEW ======
 function ArticleView({ post, onBack }) {
   return (
     <section className="mx-auto max-w-3xl px-4 py-10">
@@ -410,31 +356,18 @@ function ArticleView({ post, onBack }) {
       </div>
       <img src={post.cover} alt="" className="mt-6 h-64 w-full rounded-2xl object-cover" />
       <article className="prose prose-invert mt-6 max-w-none">
-        {post.body.split("\n\n").map((para, i) => (
-          <p key={i}>{para}</p>
-        ))}
+        {post.body.split("\n\n").map((para, i) => <p key={i}>{para}</p>)}
       </article>
       <div className="mt-8 flex flex-wrap gap-2">
-        {post.tags.map((t) => (
-          <span key={t} className="rounded-full border border-slate-700 px-2 py-0.5 text-xs text-slate-300">#{t}</span>
-        ))}
+        {post.tags.map((t) => <span key={t} className="rounded-full border border-slate-700 px-2 py-0.5 text-xs text-slate-300">#{t}</span>)}
       </div>
     </section>
   );
 }
 
-// ====== MODEL COMPARISON (RADAR) ======
 function ModelCompare() {
-  const [weights, setWeights] = useState({
-    reasoning: 0.9,
-    speed: 0.85,
-    coding: 0.8,
-    writing: 0.8,
-    longContext: 0.75,
-    toolUse: 0.9,
-  });
-
-  const data = useMemo(() => {
+  const [weights, setWeights] = useState({ reasoning: 0.9, speed: 0.85, coding: 0.8, writing: 0.8, longContext: 0.75, toolUse: 0.9 });
+  const data = React.useMemo(() => {
     const base = {
       gpt5: { reasoning: 0.93, speed: 0.9, coding: 0.9, writing: 0.83, longContext: 0.85, toolUse: 0.95 },
       claude: { reasoning: 0.9, speed: 0.8, coding: 0.78, writing: 0.92, longContext: 0.88, toolUse: 0.82 },
@@ -442,8 +375,7 @@ function ModelCompare() {
       llama: { reasoning: 0.75, speed: 0.78, coding: 0.74, writing: 0.72, longContext: 0.7, toolUse: 0.68 },
     };
     const fields = Object.keys(weights);
-    const score = (m) =>
-      (fields.reduce((acc, f) => acc + base[m][f] * weights[f], 0) / fields.length) * 100;
+    const score = (m) => (fields.reduce((acc, f) => acc + base[m][f] * weights[f], 0) / fields.length) * 100;
     return [
       { subject: "Reasoning", gpt5: base.gpt5.reasoning * 100, claude: base.claude.reasoning * 100, gemini: base.gemini.reasoning * 100, llama: base.llama.reasoning * 100 },
       { subject: "Speed", gpt5: base.gpt5.speed * 100, claude: base.claude.speed * 100, gemini: base.gemini.speed * 100, llama: base.llama.speed * 100 },
@@ -492,41 +424,26 @@ function ModelCompare() {
                 <span>{label}</span>
                 <span className="text-slate-400">{Math.round(weights[k] * 100)}%</span>
               </div>
-              <input
-                type="range"
-                min={0.4}
-                max={1}
-                step={0.01}
-                value={weights[k]}
-                onChange={(e) => setWeights((w) => ({ ...w, [k]: parseFloat(e.target.value) }))}
-                className="w-full accent-cyan-400"
-              />
+              <input type="range" min={0.4} max={1} step={0.01} value={weights[k]} onChange={(e) => setWeights((w) => ({ ...w, [k]: parseFloat(e.target.value) }))} className="w-full accent-cyan-400" />
             </div>
           ))}
-          <p className="text-xs text-slate-500">
-            These are illustrative scores for demo purposes. Replace with your evaluations or live benchmark data.
-          </p>
+          <p className="text-xs text-slate-500">These are illustrative scores for demo purposes. Replace with your evaluations or live benchmark data.</p>
         </div>
       </div>
     </section>
   );
 }
 
-// ====== SUBSCRIBE / ABOUT ======
 function Subscribe() {
   return (
     <section id="subscribe" className="mx-auto max-w-7xl px-4 pb-16">
       <div className="grid gap-8 rounded-3xl border border-slate-700/70 bg-slate-900/60 p-6 md:grid-cols-2">
         <div>
           <h3 className="text-2xl font-bold text-white">Stay current without the noise</h3>
-          <p className="mt-2 text-slate-300">
-            Get a concise morning brief + weekly deep dives. No spam, no fluff—unsubscribe anytime.
-          </p>
+          <p className="mt-2 text-slate-300">Get a concise morning brief + weekly deep dives. No spam, no fluff—unsubscribe anytime.</p>
           <form className="mt-4 flex max-w-md gap-2">
             <input type="email" placeholder="you@domain.com" className="flex-1 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-500" />
-            <button className="rounded-xl bg-gradient-to-tr from-cyan-400 to-violet-500 px-4 py-2 font-medium text-slate-900">
-              Subscribe
-            </button>
+            <button className="rounded-xl bg-gradient-to-tr from-cyan-400 to-violet-500 px-4 py-2 font-medium text-slate-900">Subscribe</button>
           </form>
           <p className="mt-2 text-xs text-slate-500">We’ll never sell your data.</p>
         </div>
@@ -559,29 +476,28 @@ function Footer() {
   );
 }
 
-// ====== ROOT ======
 export default function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [activeTag, setActiveTag] = useState("All");
   const [articleId, setArticleId] = useState(null);
-  const post = useMemo(() => POSTS.find((p) => p.id === articleId), [articleId]);
-
-  useKey("k", () => setPaletteOpen(true)); // also supports ⌘K/ctrl+k inside CommandPalette handler
+  const post = React.useMemo(() => POSTS.find((p) => p.id === articleId), [articleId]);
+  useKey("k", () => setPaletteOpen(true));
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-200">
       <NeonBackground />
       <NavBar onOpenPalette={() => setPaletteOpen(true)} />
       <Hero />
-      {!post && (
+      {!post ? (
         <>
           <FilterBar active={activeTag} setActive={setActiveTag} />
           <BlogGrid activeTag={activeTag} onOpenArticle={setArticleId} />
           <ModelCompare />
           <Subscribe />
         </>
+      ) : (
+        <ArticleView post={post} onBack={() => setArticleId(null)} />
       )}
-      {post && <ArticleView post={post} onBack={() => setArticleId(null)} />}
       <Footer />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onOpenArticle={setArticleId} />
     </main>
