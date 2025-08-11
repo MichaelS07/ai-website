@@ -365,18 +365,6 @@ function ArticleView({ post, onBack }) {
   );
 }
 
-import React, { useMemo, useState } from "react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-} from "recharts";
-
 // Palette for up to 6 models
 const COLORS = {
   gpt5: "#22d3ee", // cyan-400
