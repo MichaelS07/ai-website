@@ -1,7 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cpu, Sparkles, Search, ArrowRight, Github, Twitter, Mail, SlidersHorizontal, ChevronLeft, Tag, Command, BookOpen } from "lucide-react";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  ResponsiveContainer,
+  Tooltip,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Legend,
+} from "recharts";
 
 /* === your POSTS + TAGS data exactly as you had it === */
 const TAGS = ["How-To","News","Releases","Tips","Opinion","Benchmarks","Agents","Ethics","Tools"];
@@ -365,6 +374,10 @@ function ArticleView({ post, onBack }) {
   );
 }
 
+/* ===================
+   MODEL COMPARE (Bar)
+   =================== */
+
 // Palette for up to 6 models
 const COLORS = {
   gpt5: "#22d3ee", // cyan-400
@@ -394,38 +407,25 @@ const METRICS = [
   { key: "toolUse", label: "Tool Use" },
 ];
 
-function pct(x) {
-  return Math.round(x * 100);
-}
+const pct = (x) => Math.round(x * 100);
 
-export default function ModelCompareSelectable() {
+function ModelCompare() {
   const [selected, setSelected] = useState(["gpt5", "claude", "gemini"]);
 
   const overallScores = useMemo(() => {
-    const avg = (m) =>
-      METRICS.reduce((acc, { key }) => acc + BASE[m][key], 0) / METRICS.length;
-    return Object.fromEntries(
-      Object.keys(BASE).map((m) => [m, avg(m)])
-    );
+    const avg = (m) => METRICS.reduce((acc, { key }) => acc + BASE[m][key], 0) / METRICS.length;
+    return Object.fromEntries(Object.keys(BASE).map((m) => [m, avg(m)]));
   }, []);
 
   const chartData = useMemo(() => {
-    // Build rows like: { subject: 'Reasoning', gpt5: 95, claude: 92, ... }
     return METRICS.map(({ key, label }) => {
       const row = { subject: label };
-      selected.forEach((m) => {
-        row[m] = pct(BASE[m][key]);
-      });
+      selected.forEach((m) => { row[m] = pct(BASE[m][key]); });
       return row;
     });
   }, [selected]);
 
-  const toggleModel = (m) => {
-    setSelected((prev) =>
-      prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
-    );
-  };
-
+  const toggleModel = (m) => setSelected((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
   const selectAll = () => setSelected(Object.keys(BASE));
   const clearAll = () => setSelected([]);
 
@@ -450,14 +450,8 @@ export default function ModelCompareSelectable() {
             <button
               key={key}
               onClick={() => toggleModel(key)}
-              className={`px-3 py-1.5 rounded-2xl text-sm border transition ${
-                active
-                  ? "border-transparent text-slate-900" 
-                  : "border-slate-700/70 text-slate-300 hover:bg-slate-800"
-              }`}
-              style={{
-                backgroundColor: active ? COLORS[key] : "",
-              }}
+              className={`px-3 py-1.5 rounded-2xl text-sm border transition ${active ? "border-transparent text-slate-900" : "border-slate-700/70 text-slate-300 hover:bg-slate-800"}`}
+              style={{ backgroundColor: active ? COLORS[key] : "" }}
               aria-pressed={active}
             >
               {label}
@@ -524,7 +518,6 @@ export default function ModelCompareSelectable() {
     </section>
   );
 }
-
 
 function Subscribe() {
   return (
