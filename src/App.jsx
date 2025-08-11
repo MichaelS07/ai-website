@@ -365,74 +365,178 @@ function ArticleView({ post, onBack }) {
   );
 }
 
-function ModelCompare() {
-  const [weights, setWeights] = useState({ reasoning: 0.9, speed: 0.85, coding: 0.8, writing: 0.8, longContext: 0.75, toolUse: 0.9 });
-  const data = React.useMemo(() => {
-    const base = {
-      gpt5: { reasoning: 0.93, speed: 0.9, coding: 0.9, writing: 0.83, longContext: 0.85, toolUse: 0.95 },
-      claude: { reasoning: 0.9, speed: 0.8, coding: 0.78, writing: 0.92, longContext: 0.88, toolUse: 0.82 },
-      gemini: { reasoning: 0.86, speed: 0.82, coding: 0.76, writing: 0.8, longContext: 0.84, toolUse: 0.8 },
-      llama: { reasoning: 0.75, speed: 0.78, coding: 0.74, writing: 0.72, longContext: 0.7, toolUse: 0.68 },
-    };
-    const fields = Object.keys(weights);
-    const score = (m) => (fields.reduce((acc, f) => acc + base[m][f] * weights[f], 0) / fields.length) * 100;
-    return [
-      { subject: "Reasoning", gpt5: base.gpt5.reasoning * 100, claude: base.claude.reasoning * 100, gemini: base.gemini.reasoning * 100, llama: base.llama.reasoning * 100 },
-      { subject: "Speed", gpt5: base.gpt5.speed * 100, claude: base.claude.speed * 100, gemini: base.gemini.speed * 100, llama: base.llama.speed * 100 },
-      { subject: "Coding", gpt5: base.gpt5.coding * 100, claude: base.claude.coding * 100, gemini: base.gemini.coding * 100, llama: base.llama.coding * 100 },
-      { subject: "Writing", gpt5: base.gpt5.writing * 100, claude: base.claude.writing * 100, gemini: base.gemini.writing * 100, llama: base.llama.writing * 100 },
-      { subject: "Long Ctx", gpt5: base.gpt5.longContext * 100, claude: base.claude.longContext * 100, gemini: base.gemini.longContext * 100, llama: base.llama.longContext * 100 },
-      { subject: "Tool Use", gpt5: base.gpt5.toolUse * 100, claude: base.claude.toolUse * 100, gemini: base.gemini.toolUse * 100, llama: base.llama.toolUse * 100 },
-      { subject: "Overall", gpt5: score("gpt5"), claude: score("claude"), gemini: score("gemini"), llama: score("llama") },
-    ];
-  }, [weights]);
+import React, { useMemo, useState } from "react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
+
+// Palette for up to 6 models
+const COLORS = {
+  gpt5: "#22d3ee", // cyan-400
+  claude: "#a78bfa", // violet-400
+  gemini: "#60a5fa", // blue-400
+  grok: "#f59e0b", // amber-500
+  llama: "#f472b6", // pink-400 (Meta Llama)
+  deepseek: "#34d399", // emerald-400
+};
+
+// Base demo scores (0–1). Replace with your own eval/benchmark data.
+const BASE = {
+  gpt5: { label: "GPT‑5", reasoning: 0.95, speed: 0.91, coding: 0.92, writing: 0.88, longContext: 0.90, toolUse: 0.96 },
+  claude: { label: "Claude", reasoning: 0.92, speed: 0.83, coding: 0.80, writing: 0.94, longContext: 0.90, toolUse: 0.84 },
+  gemini: { label: "Gemini", reasoning: 0.87, speed: 0.85, coding: 0.79, writing: 0.82, longContext: 0.86, toolUse: 0.82 },
+  grok: { label: "Grok", reasoning: 0.85, speed: 0.88, coding: 0.78, writing: 0.79, longContext: 0.80, toolUse: 0.81 },
+  llama: { label: "Meta (Llama)", reasoning: 0.78, speed: 0.82, coding: 0.76, writing: 0.74, longContext: 0.74, toolUse: 0.72 },
+  deepseek: { label: "DeepSeek", reasoning: 0.84, speed: 0.86, coding: 0.83, writing: 0.77, longContext: 0.78, toolUse: 0.80 },
+};
+
+const METRICS = [
+  { key: "reasoning", label: "Reasoning" },
+  { key: "speed", label: "Speed" },
+  { key: "coding", label: "Coding" },
+  { key: "writing", label: "Writing" },
+  { key: "longContext", label: "Long Context" },
+  { key: "toolUse", label: "Tool Use" },
+];
+
+function pct(x) {
+  return Math.round(x * 100);
+}
+
+export default function ModelCompareSelectable() {
+  const [selected, setSelected] = useState(["gpt5", "claude", "gemini"]);
+
+  const overallScores = useMemo(() => {
+    const avg = (m) =>
+      METRICS.reduce((acc, { key }) => acc + BASE[m][key], 0) / METRICS.length;
+    return Object.fromEntries(
+      Object.keys(BASE).map((m) => [m, avg(m)])
+    );
+  }, []);
+
+  const chartData = useMemo(() => {
+    // Build rows like: { subject: 'Reasoning', gpt5: 95, claude: 92, ... }
+    return METRICS.map(({ key, label }) => {
+      const row = { subject: label };
+      selected.forEach((m) => {
+        row[m] = pct(BASE[m][key]);
+      });
+      return row;
+    });
+  }, [selected]);
+
+  const toggleModel = (m) => {
+    setSelected((prev) =>
+      prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
+    );
+  };
+
+  const selectAll = () => setSelected(Object.keys(BASE));
+  const clearAll = () => setSelected([]);
 
   return (
     <section id="compare" className="mx-auto max-w-7xl px-4 py-16">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white md:text-3xl">Model comparison playground</h2>
-        <div className="text-sm text-slate-400">Drag sliders to change weighting</div>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">Model comparison playground</h2>
+          <p className="text-sm text-slate-400">Pick models to compare — we’ll visualize benchmark-style scores.</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={selectAll} className="px-3 py-1.5 text-sm rounded-xl border border-slate-700/70 bg-slate-900/60 text-slate-200 hover:bg-slate-800">Select all</button>
+          <button onClick={clearAll} className="px-3 py-1.5 text-sm rounded-xl border border-slate-700/70 bg-slate-900/60 text-slate-300 hover:bg-slate-800">Clear</button>
+        </div>
       </div>
+
+      {/* Model pills */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {Object.entries(BASE).map(([key, { label }]) => {
+          const active = selected.includes(key);
+          return (
+            <button
+              key={key}
+              onClick={() => toggleModel(key)}
+              className={`px-3 py-1.5 rounded-2xl text-sm border transition ${
+                active
+                  ? "border-transparent text-slate-900" 
+                  : "border-slate-700/70 text-slate-300 hover:bg-slate-800"
+              }`}
+              style={{
+                backgroundColor: active ? COLORS[key] : "",
+              }}
+              aria-pressed={active}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="grid gap-8 lg:grid-cols-3">
+        {/* Chart panel */}
         <div className="rounded-2xl border border-slate-700/70 bg-slate-900/60 p-4 lg:col-span-2">
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: "#94a3b8" }} />
-                <PolarRadiusAxis angle={45} domain={[0, 100]} tick={{ fill: "#64748b" }} />
+              <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                <CartesianGrid stroke="#1f2937" strokeDasharray="3 3" />
+                <XAxis dataKey="subject" tick={{ fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "#334155" }} />
+                <YAxis domain={[0, 100]} tick={{ fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "#334155" }} />
                 <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid #334155", color: "#e2e8f0" }} />
-                <Radar name="GPT-5" dataKey="gpt5" fill="#22d3ee" fillOpacity={0.35} stroke="#22d3ee" />
-                <Radar name="Claude" dataKey="claude" fill="#a78bfa" fillOpacity={0.25} stroke="#a78bfa" />
-                <Radar name="Gemini" dataKey="gemini" fill="#60a5fa" fillOpacity={0.25} stroke="#60a5fa" />
-                <Radar name="Llama" dataKey="llama" fill="#f472b6" fillOpacity={0.2} stroke="#f472b6" />
-              </RadarChart>
+                <Legend wrapperStyle={{ color: "#cbd5e1" }} />
+                {selected.map((m) => (
+                  <Bar key={m} dataKey={m} name={BASE[m].label} fill={COLORS[m]} radius={[6, 6, 0, 0]} />
+                ))}
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="space-y-4">
-          {Object.entries({
-            reasoning: "Multi-step reasoning",
-            speed: "Latency / throughput",
-            coding: "Code generation",
-            writing: "Writing quality",
-            longContext: "Long context",
-            toolUse: "Tool use / API calls",
-          }).map(([k, label]) => (
-            <div key={k} className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-4">
-              <div className="mb-2 flex items-center justify-between text-sm text-slate-300">
-                <span>{label}</span>
-                <span className="text-slate-400">{Math.round(weights[k] * 100)}%</span>
-              </div>
-              <input type="range" min={0.4} max={1} step={0.01} value={weights[k]} onChange={(e) => setWeights((w) => ({ ...w, [k]: parseFloat(e.target.value) }))} className="w-full accent-cyan-400" />
+
+        {/* Summary cards */}
+        <div className="space-y-3">
+          {selected.length === 0 ? (
+            <div className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-4 text-slate-300">
+              Select one or more models to view stats.
             </div>
-          ))}
-          <p className="text-xs text-slate-500">These are illustrative scores for demo purposes. Replace with your evaluations or live benchmark data.</p>
+          ) : (
+            selected.map((m) => (
+              <div key={m} className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[m] }} />
+                    <h3 className="text-slate-100 font-semibold">{BASE[m].label}</h3>
+                  </div>
+                  <span className="text-sm text-slate-400">Overall</span>
+                </div>
+                <div className="mt-2 flex items-end justify-between">
+                  <div>
+                    <div className="text-3xl font-bold text-white">{pct(overallScores[m])}<span className="text-slate-400 text-lg align-top">/100</span></div>
+                    <p className="text-xs text-slate-400">Average across all dimensions</p>
+                  </div>
+                  <div className="text-xs grid grid-cols-2 gap-x-4 gap-y-1 text-slate-300">
+                    {METRICS.map(({ key, label }) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="text-slate-500">{label}</span>
+                        <span className="font-semibold text-slate-200">{pct(BASE[m][key])}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+          <p className="text-xs text-slate-500">These are illustrative demo scores. Swap in your evals, Arena results, or live telemetry.</p>
         </div>
       </div>
     </section>
   );
 }
+
 
 function Subscribe() {
   return (
